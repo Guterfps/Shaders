@@ -8,21 +8,30 @@ uniform vec2 u_resolution;
 uniform vec2 u_mouse;
 uniform float u_time;
 
-float plot(vec2 st, float pct){
-  return  smoothstep( pct-0.02, pct, st.y) -
-          smoothstep( pct, pct+0.02, st.y);
+vec3 colorA = vec3(0.149,0.141,0.912);
+vec3 colorB = vec3(1.000,0.833,0.224);
+
+float plot (vec2 st, float pct){
+  return  smoothstep( pct-0.01, pct, st.y) -
+          smoothstep( pct, pct+0.01, st.y);
 }
 
 void main() {
-    vec2 st = gl_FragCoord.xy/u_resolution;
+    vec2 st = gl_FragCoord.xy/u_resolution.xy;
+    vec3 color = vec3(0.0);
 
-    // Smooth interpolation between 0.1 and 0.9
-    float y = smoothstep(0.2,0.5,st.x) - smoothstep(0.5,0.8,st.x);
+    vec3 pct = vec3(st.x);
 
-    vec3 color = vec3(y * sin(u_time));
+    pct.r = smoothstep(0.0,1.0, st.x);
+    pct.g = sin(st.x*PI);
+    pct.b = pow(st.x,0.5);
 
-    float pct = plot(st,y);
-    color = (1.0-pct)*color+pct*vec3(0.0,1.0,0.0);
+    color = mix(colorA, colorB, pct);
+
+    // Plot transition lines for each channel
+    color = mix(color,vec3(1.0,0.0,0.0),plot(st,pct.r));
+    color = mix(color,vec3(0.0,1.0,0.0),plot(st,pct.g));
+    color = mix(color,vec3(0.0,0.0,1.0),plot(st,pct.b));
 
     gl_FragColor = vec4(color,1.0);
 }
